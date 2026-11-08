@@ -28,8 +28,8 @@ window.__ModuleLoader__.load({
       '主人，已经坐了很久了。起来活动一下比较好。',
     ];
 
-    var W = 220;
-    var H = 300;
+    var W = 150;
+    var H = 210;
 
     function PetOverlay() {
       var canvasRef = React.useRef(null);
@@ -70,7 +70,7 @@ window.__ModuleLoader__.load({
           if (img) {
             var breath = Math.sin((t * Math.PI * 2) / 3.4);
             var sway = Math.sin((t * Math.PI * 2) / 4.8);
-            var hh = 280;
+            var hh = 196;
             var ww = (hh * img.width) / img.height;
             ctx.save();
             ctx.translate(W / 2, H - 6);
@@ -177,8 +177,8 @@ window.__ModuleLoader__.load({
           style: {
             position: 'absolute',
             top: '0px',
-            left: '0px',
-            width: (W - 12) + 'px',
+            right: '0px',
+            width: '196px',
             padding: '8px 12px',
             borderRadius: '14px',
             background: 'rgba(255,255,255,0.96)',
