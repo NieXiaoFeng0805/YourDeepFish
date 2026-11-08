@@ -179,12 +179,22 @@ window.__ModuleLoader__.load({
     }
 
     function apply(ctx) {
-      ctx.slots.inject('shell.overlay', function () {
-        return ctx.slots.register(
-          { name: 'shell.overlay', id: 'dsh-yourdeepfish', order: 90 },
-          PetOverlay,
-        );
-      });
+      // 注册失败不能让整个 web boot 挂掉：宿主把 apply 抛错当成 entry failed，
+      // 会直接阻断启动。这里兜住所有异常，只在控制台留一条记录。
+      try {
+        if (!ctx || !ctx.slots) {
+          console.error('[yourdeepfish] ctx.slots 不可用，跳过悬浮层注册');
+          return;
+        }
+        ctx.slots.inject('shell.overlay', function () {
+          return ctx.slots.register(
+            { name: 'shell.overlay', id: 'dsh-yourdeepfish', order: 90 },
+            PetOverlay,
+          );
+        });
+      } catch (error) {
+        console.error('[yourdeepfish] 注册悬浮层失败:', error);
+      }
     }
 
     exports.apply = apply;

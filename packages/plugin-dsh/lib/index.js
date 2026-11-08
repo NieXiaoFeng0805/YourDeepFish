@@ -6,6 +6,7 @@
  */
 export const name = 'dsh-yourdeepfish';
 
-export function apply(ctx) {
-  ctx.logger?.info?.('小肥鱼插件已加载（客户端外壳）');
+export function apply() {
+  // 宿主侧目前是空实现：宠物完全由客户端外壳渲染。
+  // 这里故意不访问任何 ctx 服务，避免入口激活失败拖垮 web boot。
 }
