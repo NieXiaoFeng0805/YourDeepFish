@@ -1,11 +1,13 @@
 'use strict';
 
 const api = window.petAPI;
-const W = 260;
-const H = 340;
+const W = 200;
+const H = 210;
 const DPR = Math.min(2, window.devicePixelRatio || 1);
 const BOTTOM = 12;
-const POSE_SCALE = 0.5; // 素材按 2 倍尺寸烘焙
+// 与 DSH 插件保持一致：本体显示高度 126px（插件画布 hh=126）
+const DESIRED_H = 126;
+let poseScale = 126 / 433;
 
 const canvas = document.getElementById('stage');
 const bubbleEl = document.getElementById('bubble');
@@ -20,9 +22,9 @@ ctx.scale(DPR, DPR);
 /* ---------------- 资源 ---------------- */
 
 const POSE_SRC = {
-  idle: '../assets/char/pose_idle.png',
-  happy: '../assets/char/pose_happy.png',
-  sleep: '../assets/char/pose_sleep.png',
+  idle: '../../assets/char/pose_idle.png',
+  happy: '../../assets/char/pose_happy.png',
+  sleep: '../../assets/char/pose_sleep.png',
 };
 
 const images = {};
@@ -31,6 +33,7 @@ for (const [key, src] of Object.entries(POSE_SRC)) {
   img.src = src;
   img.onload = () => {
     images[key] = img;
+    if (key === 'idle') poseScale = DESIRED_H / img.height;
   };
 }
 
@@ -123,8 +126,8 @@ function startRandomAction(now) {
 function drawPose(key, alpha, sx, sy, rot, dx, dy) {
   const img = images[key];
   if (!img || alpha <= 0.002) return;
-  const w = img.width * POSE_SCALE;
-  const h = img.height * POSE_SCALE;
+  const w = img.width * poseScale;
+  const h = img.height * poseScale;
   ctx.save();
   ctx.globalAlpha = clamp(alpha, 0, 1);
   ctx.translate(W / 2 + dx, H - BOTTOM + dy);

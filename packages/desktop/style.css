@@ -1,4 +1,4 @@
-html,
+﻿html,
 body {
   margin: 0;
   padding: 0;
@@ -13,8 +13,8 @@ body {
 
 #stage {
   display: block;
-  width: 260px;
-  height: 340px;
+  width: 200px;
+  height: 210px;
 }
 
 .bubble {
@@ -22,12 +22,12 @@ body {
   top: 8px;
   left: 50%;
   transform: translateX(-50%) translateY(6px);
-  max-width: 226px;
-  padding: 8px 13px;
+  max-width: 178px;
+  padding: 6px 11px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.97);
   color: #2b3a67;
-  font: 500 12.5px/1.5 "Microsoft YaHei", "PingFang SC", sans-serif;
+  font: 500 11.5px/1.5 "Microsoft YaHei", "PingFang SC", sans-serif;
   letter-spacing: 0.2px;
   box-shadow: 0 6px 18px rgba(38, 64, 140, 0.22), 0 0 0 1px rgba(120, 160, 255, 0.25) inset;
   opacity: 0;

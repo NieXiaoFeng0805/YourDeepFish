@@ -10,8 +10,8 @@ const persona = require('../core/persona');
 
 const ROOT = path.join(__dirname, '..', '..');
 const DATA = path.join(ROOT, 'data');
-const W = 260;
-const H = 340;
+const W = 200;
+const H = 210;
 const PORT = 45871;
 const SHOT = process.argv.includes('--shot');
 const CONSOLE_SHOT = process.argv.includes('--console-shot');
