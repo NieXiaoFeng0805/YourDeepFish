@@ -82,24 +82,81 @@ window.__ModuleLoader__.load({
           raf = requestAnimationFrame(frame);
         }
         raf = requestAnimationFrame(frame);
+
+        // 连接本地内核（和桌面外壳同一份 WS），收到 say 就弹气泡
+        var socket = null;
+        var retry = 0;
+        var retryTimer = 0;
+        function connect() {
+          try {
+            socket = new WebSocket('ws://127.0.0.1:45871');
+          } catch (e) {
+            return;
+          }
+          socket.onopen = function () {
+            retry = 0;
+            try {
+              socket.send(JSON.stringify({ type: 'hello', shell: 'dsh-plugin' }));
+            } catch (e) {
+              /* ignore */
+            }
+          };
+          socket.onmessage = function (ev) {
+            try {
+              var msg = JSON.parse(ev.data);
+              if (msg && msg.type === 'say') {
+                showBubble(msg.text);
+                stateRef.current.pose = 'happy';
+                stateRef.current.happyUntil = performance.now() + 3000;
+              }
+            } catch (e) {
+              /* ignore */
+            }
+          };
+          socket.onclose = function () {
+            socket = null;
+            retryTimer = window.setTimeout(connect, Math.min(15000, 2000 * (++retry)));
+          };
+          socket.onerror = function () {
+            try {
+              socket.close();
+            } catch (e) {
+              /* ignore */
+            }
+          };
+        }
+        connect();
+
         return function () {
           cancelAnimationFrame(raf);
+          window.clearTimeout(retryTimer);
+          if (socket) {
+            try {
+              socket.close();
+            } catch (e) {
+              /* ignore */
+            }
+          }
         };
       }, []);
+
+      function showBubble(text) {
+        var bubble = bubbleRef.current;
+        if (!bubble || !text) return;
+        bubble.textContent = text;
+        bubble.style.opacity = '1';
+        var st = stateRef.current;
+        clearTimeout(st.timer);
+        st.timer = setTimeout(function () {
+          bubble.style.opacity = '0';
+        }, 6000);
+      }
 
       function onClick() {
         var st = stateRef.current;
         st.pose = 'happy';
         st.happyUntil = performance.now() + 3000;
-        var bubble = bubbleRef.current;
-        if (bubble) {
-          bubble.textContent = LINES[Math.floor(Math.random() * LINES.length)];
-          bubble.style.opacity = '1';
-          clearTimeout(st.timer);
-          st.timer = setTimeout(function () {
-            bubble.style.opacity = '0';
-          }, 6000);
-        }
+        showBubble(LINES[Math.floor(Math.random() * LINES.length)]);
       }
 
       return h(
