@@ -185,6 +185,9 @@ hub.on('cmd', async (msg, ws) => {
       hub.safeSend(ws, { type: 'ack', cmd: name, ok: true });
     } else if (name === 'status') {
       hub.safeSend(ws, { type: 'ack', cmd: name, ok: true, allowLevel: config.allowLevel, clients: hub.size });
+    } else if (name === 'config:reload') {
+      Object.assign(config, loadConfig());
+      hub.safeSend(ws, { type: 'ack', cmd: name, ok: true, config });
     } else {
       hub.safeSend(ws, { type: 'ack', cmd: name, ok: false, error: '未知命令' });
     }

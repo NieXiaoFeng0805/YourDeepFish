@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>小肥鱼 · 控制台</title>
+<style>
+  :root {
+    --bg: #0e1729;
+    --panel: #16223a;
+    --panel-2: #1b2944;
+    --line: rgba(120, 150, 220, 0.18);
+    --text: #e6ecff;
+    --muted: #8ea2cc;
+    --accent: #6d8bff;
+    --ok: #58d38c;
+    --off: #6b7796;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: radial-gradient(120% 90% at 100% 0%, #1b2c4f 0%, var(--bg) 55%);
+    color: var(--text);
+    font: 13.5px/1.6 "Microsoft YaHei", "PingFang SC", sans-serif;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .title { font-size: 18px; font-weight: 600; letter-spacing: 0.5px; }
+  .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .chips { display: flex; gap: 8px; }
+  .chip {
+    font-size: 11.5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(120, 150, 220, 0.1);
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+  .chip.ok { color: var(--ok); border-color: rgba(88, 211, 140, 0.35); background: rgba(88, 211, 140, 0.08); }
+  .chip.warn { color: #f0b46a; border-color: rgba(240, 180, 106, 0.35); background: rgba(240, 180, 106, 0.08); }
+
+  main { flex: 1; overflow: auto; padding: 16px 22px 8px; }
+  section { margin-bottom: 16px; }
+  h2 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin: 0 0 8px;
+  }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .card {
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+  }
+  .card-head { font-weight: 600; font-size: 13.5px; display: flex; align-items: center; gap: 8px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .dot-alt { background: #9a7bff; box-shadow: 0 0 10px #9a7bff; }
+  .hint { color: var(--muted); font-size: 11.5px; margin: 6px 0 10px; min-height: 32px; }
+  .mini { color: var(--muted); font-size: 11px; margin-top: 8px; word-break: break-all; }
+
+  .row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 0; border-top: 1px dashed rgba(120, 150, 220, 0.12);
+    font-size: 12.5px;
+  }
+  .row:first-of-type { border-top: none; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+  .field { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--muted); }
+  .field.wide { grid-column: 1 / -1; }
+  input[type="text"], input[type="time"], input[type="number"], select {
+    background: rgba(10, 18, 34, 0.7);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    color: var(--text);
+    padding: 8px 10px;
+    font: inherit;
+    outline: none;
+  }
+  input[type="text"]:focus, select:focus, input[type="number"]:focus, input[type="time"]:focus {
+    border-color: rgba(109, 139, 255, 0.6);
+  }
+  .inline { display: flex; gap: 8px; }
+  .inline input { flex: 1; }
+
+  .switch {
+    appearance: none;
+    width: 40px; height: 22px;
+    border-radius: 999px;
+    background: rgba(120, 150, 220, 0.2);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.18s ease;
+    flex: none;
+  }
+  .switch::after {
+    content: "";
+    position: absolute; top: 3px; left: 3px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #c9d6f5;
+    transition: transform 0.18s ease, background 0.18s ease;
+  }
+  .switch:checked { background: rgba(109, 139, 255, 0.75); }
+  .switch:checked::after { transform: translateX(18px); background: #fff; }
+
+  footer {
+    display: flex; align-items: center; justify-content: flex-end; gap: 12px;
+    padding: 14px 22px 18px; border-top: 1px solid var(--line);
+  }
+  .btn {
+    background: linear-gradient(180deg, #7b96ff, #5a76e6);
+    border: none; color: #fff;
+    padding: 9px 22px; border-radius: 10px;
+    font: 600 13px/1 "Microsoft YaHei", sans-serif;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(90, 118, 230, 0.35);
+  }
+  .btn:hover { filter: brightness(1.06); }
+  .btn.ghost {
+    background: transparent; border: 1px solid var(--line);
+    color: var(--text); box-shadow: none; padding: 8px 14px; font-weight: 500;
+  }
+  .toast { color: var(--muted); font-size: 12px; margin-right: auto; transition: color 0.2s; }
+  .toast.ok { color: var(--ok); }
+  .toast.err { color: #ff8b8b; }
+</style>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="title">小肥鱼 · 控制台</div>
+      <div class="sub">启动方式、权限与自动化</div>
+    </div>
+    <div class="chips">
+      <span class="chip" id="chipCore">内核 —</span>
+      <span class="chip" id="chipPet">桌宠 —</span>
+      <span class="chip" id="chipPlugin">插件 —</span>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>启动方式</h2>
+      <div class="cards">
+        <div class="card">
+          <div class="card-head"><span class="dot"></span>系统启动 · 桌面悬浮窗</div>
+          <p class="hint">独立进程，站在任务栏上方，可拖拽、可穿透。</p>
+          <label class="row"><span>显示桌宠</span><input type="checkbox" id="petVisible" class="switch" /></label>
+          <label class="row"><span>开机自动启动</span><input type="checkbox" id="autostart" class="switch" /></label>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="dot dot-alt"></span>插件启动 · DSH 界面内</div>
+          <p class="hint">住在 DeepSeek Harness 右下角，能看到会话上下文。</p>
+          <label class="row"><span>启用插件</span><input type="checkbox" id="pluginEnabled" class="switch" /></label>
+          <div class="mini" id="pluginPath"></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>权限与自动化</h2>
+      <div class="grid">
+        <label class="field"><span>权限上限</span>
+          <select id="allowLevel">
+            <option value="0">L0 · 只读观察</option>
+            <option value="1">L1 · 本地写入</option>
+            <option value="2">L2 · 执行命令（需确认）</option>
+            <option value="3">L3 · 对外发送（需确认）</option>
+          </select>
+        </label>
+        <label class="field"><span>每日归档时间</span><input type="time" id="dailyOrganize" /></label>
+        <label class="field"><span>空闲提醒（分钟）</span><input type="number" id="idleRemindMinutes" min="1" max="180" /></label>
+        <label class="field"><span>剪贴板阈值（字）</span><input type="number" id="clipboardMinChars" min="100" max="5000" /></label>
+        <label class="field wide"><span>下载目录</span>
+          <div class="inline">
+            <input type="text" id="downloadsDir" />
+            <button class="btn ghost" id="pickDir">浏览</button>
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <section>
+      <h2>其他</h2>
+      <label class="row"><span>静音（不弹气泡）</span><input type="checkbox" id="muted" class="switch" /></label>
+    </section>
+  </main>
+
+  <footer>
+    <div class="toast" id="toast"></div>
+    <button class="btn" id="save">保存并应用</button>
+  </footer>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const api = window.consoleAPI;
+  let status = null;
+
+  function setChip(el, text, tone) {
+    el.textContent = text;
+    el.className = 'chip' + (tone ? ' ' + tone : '');
+  }
+
+  function renderStatus(s) {
+    status = s;
+    setChip($('chipCore'), s.core ? '内核 已连接' : '内核 未连接', s.core ? 'ok' : 'warn');
+    setChip($('chipPet'), s.petVisible ? '桌宠 显示中' : '桌宠 已隐藏', s.petVisible ? 'ok' : '');
+    const p = s.plugin || {};
+    setChip($('chipPlugin'), p.enabled ? '插件 已启用' : p.installed ? '插件 已安装未启用' : '插件 未安装', p.enabled ? 'ok' : 'warn');
+    $('petVisible').checked = !!s.petVisible;
+    $('autostart').checked = !!s.autostart;
+    $('pluginEnabled').checked = !!p.enabled;
+    $('pluginPath').textContent = p.profile ? 'profile：' + p.profile : '';
+  }
+
+  async function load() {
+    const data = await api.get();
+    const c = data.config || {};
+    $('allowLevel').value = String(c.allowLevel ?? 1);
+    $('dailyOrganize').value = c.dailyOrganize || '09:00';
+    $('idleRemindMinutes').value = c.idleRemindMinutes ?? 20;
+    $('clipboardMinChars').value = c.clipboardMinChars ?? 800;
+    $('downloadsDir').value = c.downloadsDir || '';
+    $('muted').checked = !!c.muted;
+    renderStatus(data.status || {});
+  }
+
+  function toast(text, tone) {
+    const el = $('toast');
+    el.textContent = text;
+    el.className = 'toast' + (tone ? ' ' + tone : '');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => { el.textContent = ''; }, 4000);
+  }
+
+  $('petVisible').addEventListener('change', (e) => {
+    api.petVisible(e.target.checked);
+    setChip($('chipPet'), e.target.checked ? '桌宠 显示中' : '桌宠 已隐藏', e.target.checked ? 'ok' : '');
+  });
+
+  $('pluginEnabled').addEventListener('change', async (e) => {
+    const want = e.target.checked;
+    const res = await api.plugin(want);
+    if (!res.ok) {
+      e.target.checked = !want;
+      toast('插件操作失败：' + res.error, 'err');
+      return;
+    }
+    renderStatus({ ...status, plugin: res.state });
+    toast(want ? '已写入 DSH profile，重启 DSH 后生效' : '已从 profile 移除，重启 DSH 后生效', 'ok');
+  });
+
+  $('pickDir').addEventListener('click', async () => {
+    const dir = await api.pickDir();
+    if (dir) $('downloadsDir').value = dir;
+  });
+
+  $('save').addEventListener('click', async () => {
+    const payload = {
+      allowLevel: Number($('allowLevel').value),
+      dailyOrganize: $('dailyOrganize').value || '09:00',
+      idleRemindMinutes: Number($('idleRemindMinutes').value) || 20,
+      clipboardMinChars: Number($('clipboardMinChars').value) || 800,
+      downloadsDir: $('downloadsDir').value.trim(),
+      muted: $('muted').checked,
+      autostart: $('autostart').checked,
+    };
+    const res = await api.save(payload);
+    if (res.ok) {
+      setChip($('chipCore'), status && status.core ? '内核 已连接' : '内核 未连接', status && status.core ? 'ok' : 'warn');
+      toast('已保存，配置已推送到内核', 'ok');
+    } else {
+      toast('保存失败', 'err');
+    }
+  });
+
+  load();
+</script>
+</body>
+</html>

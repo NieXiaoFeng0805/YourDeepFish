@@ -96,6 +96,23 @@ python tools/character_sheet.py
 | `python tools/build_plugin_client.py` | 重新生成插件客户端（内联角色图） |
 | `electron tools/harness/main.js` | 在本地 harness 里验证插件渲染 |
 
+## 控制台
+
+托盘右键 →「控制台…」打开（`packages/desktop/console.html`）。
+
+| 配置项 | 说明 |
+| --- | --- |
+| 显示桌宠 / 开机自启 | 控制桌面外壳的可见性与开机启动 |
+| 启用插件 | 把 `dsh-yourdeepfish` 写进 DSH profile，**重启 DSH 后生效**（改动前自动备份 `.bak-yourdeepfish`） |
+| 权限上限 | L0 只读 / L1 本地写入 / L2 执行命令 / L3 对外发送 |
+| 每日归档时间 | 默认 09:00 |
+| 空闲提醒 | 默认 20 分钟 |
+| 剪贴板阈值 | 默认 800 字 |
+| 下载目录 | 归档与监视的目标目录 |
+| 静音 | 不弹气泡 |
+
+保存后通过 WS 通知内核热重载配置，不需要重启桌宠。
+
 ## DSH 插件（实验）
 
 `packages/plugin-dsh` 是一个 DSH 浏览器插件：注册到 `shell.overlay`，在界面右下角画一只会呼吸、可点击的小肥鱼。角色图以 base64 内联进 `lib/client.js`，不依赖宿主静态路由。

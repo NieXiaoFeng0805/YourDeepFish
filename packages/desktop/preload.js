@@ -15,3 +15,11 @@ contextBridge.exposeInMainWorld('petAPI', {
   onMood: (cb) => ipcRenderer.on('pet:mood', (_e, d) => cb(d)),
   onCursor: (cb) => ipcRenderer.on('pet:cursor', (_e, d) => cb(d)),
 });
+
+contextBridge.exposeInMainWorld('consoleAPI', {
+  get: () => ipcRenderer.invoke('console:get'),
+  save: (cfg) => ipcRenderer.invoke('console:save', cfg),
+  plugin: (enable) => ipcRenderer.invoke('console:plugin', enable),
+  pickDir: () => ipcRenderer.invoke('console:pickDir'),
+  petVisible: (visible) => ipcRenderer.send('pet:visible', visible),
+});

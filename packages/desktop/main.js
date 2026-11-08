@@ -1,7 +1,8 @@
 'use strict';
-const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen, clipboard, powerMonitor } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, screen, clipboard, powerMonitor, dialog } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
+const os = require('node:os');
 const net = require('node:net');
 const { spawn } = require('node:child_process');
 const WebSocket = require('ws');
@@ -13,6 +14,8 @@ const W = 260;
 const H = 340;
 const PORT = 45871;
 const SHOT = process.argv.includes('--shot');
+const CONSOLE_SHOT = process.argv.includes('--console-shot');
+const HEADLESS = SHOT || CONSOLE_SHOT;
 const QA = process.argv.includes('--qa');
 const SAVE_PATH = path.join(DATA, 'state.json');
 
@@ -25,7 +28,7 @@ const ENTRANCE = (() => {
   return ['left', 'right', 'bottom', 'top'].includes(edge) ? edge : 'random';
 })();
 
-if (!SHOT && !app.requestSingleInstanceLock()) {
+if (!HEADLESS && !app.requestSingleInstanceLock()) {
   app.quit();
 }
 
@@ -361,6 +364,7 @@ function buildMenu() {
   return Menu.buildFromTemplate([
     { label: '摸摸头', click: () => pat() },
     { label: '说句话', click: () => { const l = persona.line(['happy', 'cozy', 'tsundere'][Math.floor(Math.random() * 3)]); send('pet:say', l); } },
+    { label: '控制台…', click: () => openConsole() },
     { type: 'separator' },
     { label: '整理下载目录', click: () => cmd('organize') },
     { label: '让它生气一下', click: () => { send('pet:mood', 'angry'); setTimeout(() => send('pet:mood', 'happy'), 3200); } },
@@ -563,6 +567,142 @@ ipcMain.on('pet:pat', () => pat());
 
 ipcMain.handle('persona:line', (_e, category) => persona.line(category));
 
+/* ---------------- 控制台 ---------------- */
+
+const PROFILE_DIR = path.join(os.homedir(), '.dsh', 'profiles', 'desktop');
+const PLUGIN_ID = 'dsh-yourdeepfish';
+const PLUGIN_SRC = path.join(ROOT, 'packages', 'plugin-dsh');
+const CONFIG_PATH = path.join(DATA, 'config.json');
+
+const CONFIG_DEFAULTS = {
+  allowLevel: 1,
+  downloadsDir: path.join(os.homedir(), 'Downloads'),
+  dailyOrganize: '09:00',
+  idleRemindMinutes: 20,
+  clipboardMinChars: 800,
+  muted: false,
+};
+
+let consoleWin = null;
+
+function readConfig() {
+  try {
+    return { ...CONFIG_DEFAULTS, ...JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8')) };
+  } catch {
+    return { ...CONFIG_DEFAULTS };
+  }
+}
+
+function writeConfig(cfg) {
+  fs.mkdirSync(DATA, { recursive: true });
+  fs.writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2), 'utf8');
+}
+
+function pluginState() {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(PROFILE_DIR, 'package.json'), 'utf8'));
+    return {
+      installed: fs.existsSync(path.join(PROFILE_DIR, 'node_modules', PLUGIN_ID, 'package.json')),
+      enabled: (pkg.dsh?.profile?.bundles || []).includes(PLUGIN_ID),
+      profile: PROFILE_DIR,
+    };
+  } catch {
+    return { installed: false, enabled: false, profile: PROFILE_DIR, error: '找不到 DSH profile' };
+  }
+}
+
+function pluginSet(enable) {
+  const pkgPath = path.join(PROFILE_DIR, 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  pkg.dsh = pkg.dsh || {};
+  pkg.dsh.profile = pkg.dsh.profile || {};
+  const bundles = Array.isArray(pkg.dsh.profile.bundles) ? pkg.dsh.profile.bundles : [];
+
+  if (enable) {
+    const dest = path.join(PROFILE_DIR, 'node_modules', PLUGIN_ID);
+    fs.rmSync(dest, { recursive: true, force: true });
+    fs.mkdirSync(dest, { recursive: true });
+    fs.cpSync(PLUGIN_SRC, dest, { recursive: true });
+    pkg.dependencies = pkg.dependencies || {};
+    pkg.dependencies[PLUGIN_ID] = 'file:' + PLUGIN_SRC.replace(/\\/g, '/');
+    if (!bundles.includes(PLUGIN_ID)) bundles.push(PLUGIN_ID);
+  }
+  pkg.dsh.profile.bundles = enable ? bundles : bundles.filter((b) => b !== PLUGIN_ID);
+
+  fs.copyFileSync(pkgPath, pkgPath + '.bak-yourdeepfish');
+  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2), 'utf8');
+  return pluginState();
+}
+
+function openConsole() {
+  if (consoleWin && !consoleWin.isDestroyed()) {
+    consoleWin.show();
+    consoleWin.focus();
+    return consoleWin;
+  }
+  consoleWin = new BrowserWindow({
+    width: 660,
+    height: 780,
+    minWidth: 560,
+    minHeight: 640,
+    title: '小肥鱼 · 控制台',
+    backgroundColor: '#0e1729',
+    autoHideMenuBar: true,
+    show: !process.argv.includes('--console-shot'),
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      offscreen: process.argv.includes('--console-shot'),
+    },
+  });
+  consoleWin.loadFile(path.join(__dirname, 'console.html'));
+  consoleWin.on('closed', () => {
+    consoleWin = null;
+  });
+  return consoleWin;
+}
+
+ipcMain.handle('console:get', () => ({
+  config: readConfig(),
+  status: {
+    core: !!(ws && ws.readyState === 1),
+    petVisible: !!(win && win.isVisible()),
+    autostart: app.getLoginItemSettings().openAtLogin,
+    plugin: pluginState(),
+  },
+}));
+
+ipcMain.handle('console:save', (_e, payload) => {
+  const next = { ...readConfig(), ...(payload || {}) };
+  delete next.autostart;
+  writeConfig(next);
+  if (ws && ws.readyState === 1) ws.send(JSON.stringify({ type: 'cmd', cmd: 'config:reload' }));
+  if (payload && typeof payload.autostart === 'boolean') {
+    app.setLoginItemSettings({ openAtLogin: payload.autostart, path: process.execPath, args: [ROOT] });
+  }
+  return { ok: true, config: next };
+});
+
+ipcMain.handle('console:plugin', (_e, enable) => {
+  try {
+    return { ok: true, state: pluginSet(!!enable) };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
+
+ipcMain.handle('console:pickDir', async () => {
+  const result = await dialog.showOpenDialog(consoleWin || win, { properties: ['openDirectory'] });
+  return result.canceled ? null : result.filePaths[0];
+});
+
+ipcMain.on('pet:visible', (_e, visible) => {
+  if (!win) return;
+  if (visible) win.showInactive();
+  else win.hide();
+});
+
 /* ---------------- 生命周期 ---------------- */
 
 app.on('second-instance', () => {
@@ -579,6 +719,20 @@ app.on('before-quit', () => {
 });
 
 app.whenReady().then(async () => {
+  if (process.argv.includes('--console-shot')) {
+    const cw = openConsole();
+    cw.webContents.once('did-finish-load', () => {
+      setTimeout(async () => {
+        const img = await cw.webContents.capturePage();
+        fs.mkdirSync(path.join(ROOT, 'build'), { recursive: true });
+        fs.writeFileSync(path.join(ROOT, 'build', 'console.png'), img.toPNG());
+        console.log('[console] saved build/console.png', img.getSize());
+        app.quit();
+      }, 1400);
+    });
+    return;
+  }
+
   if (QA) {
     // 离屏渲染：只截图，不在屏幕上弹任何窗口
     createWindow();
