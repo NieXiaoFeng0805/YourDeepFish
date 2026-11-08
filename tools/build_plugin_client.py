@@ -1,4 +1,4 @@
-"""生成 DSH 浏览器插件客户端：把三张姿态图内联成 base64，避免宿主静态路由问题。
+﻿"""生成 DSH 浏览器插件客户端：把三张姿态图内联成 base64，避免宿主静态路由问题。
 
 用法: python tools/build_plugin_client.py
 输出: packages/plugin-dsh/lib/client.js
@@ -63,8 +63,8 @@ window.__ModuleLoader__.load({
       '主人，已经坐了很久了。起来活动一下比较好。',
     ];
 
-    var W = 150;
-    var H = 210;
+    var W = 120;
+    var H = 170;
 
     function PetOverlay() {
       var canvasRef = React.useRef(null);
@@ -105,7 +105,7 @@ window.__ModuleLoader__.load({
           if (img) {
             var breath = Math.sin((t * Math.PI * 2) / 3.4);
             var sway = Math.sin((t * Math.PI * 2) / 4.8);
-            var hh = 196;
+            var hh = 158;
             var ww = (hh * img.width) / img.height;
             ctx.save();
             ctx.translate(W / 2, H - 6);
@@ -279,3 +279,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
