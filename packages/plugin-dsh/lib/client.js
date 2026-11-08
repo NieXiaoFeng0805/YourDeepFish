@@ -31,6 +31,53 @@ window.__ModuleLoader__.load({
     var W = 96;
     var H = 136;
 
+    /* 内核连接做成模块级单例：组件可能被反复挂载，不能每次挂载都开一条 WS。 */
+    var coreListeners = [];
+    var core = { socket: null, retry: 0, timer: 0 };
+
+    function coreConnect() {
+      if (core.socket) return;
+      try {
+        core.socket = new WebSocket('ws://127.0.0.1:45871');
+      } catch (error) {
+        return;
+      }
+      core.socket.onopen = function () {
+        core.retry = 0;
+        try {
+          core.socket.send(JSON.stringify({ type: 'hello', shell: 'dsh-plugin' }));
+        } catch (error) {
+          /* ignore */
+        }
+      };
+      core.socket.onmessage = function (ev) {
+        try {
+          var msg = JSON.parse(ev.data);
+          if (!msg || msg.type !== 'say') return;
+          coreListeners.forEach(function (fn) {
+            try {
+              fn(msg);
+            } catch (error) {
+              /* ignore */
+            }
+          });
+        } catch (error) {
+          /* ignore */
+        }
+      };
+      core.socket.onclose = function () {
+        core.socket = null;
+        core.timer = window.setTimeout(coreConnect, Math.min(15000, 2000 * (++core.retry)));
+      };
+      core.socket.onerror = function () {
+        try {
+          core.socket.close();
+        } catch (error) {
+          /* ignore */
+        }
+      };
+    }
+
     function PetOverlay() {
       var canvasRef = React.useRef(null);
       var bubbleRef = React.useRef(null);
@@ -83,60 +130,19 @@ window.__ModuleLoader__.load({
         }
         raf = requestAnimationFrame(frame);
 
-        // 连接本地内核（和桌面外壳同一份 WS），收到 say 就弹气泡
-        var socket = null;
-        var retry = 0;
-        var retryTimer = 0;
-        function connect() {
-          try {
-            socket = new WebSocket('ws://127.0.0.1:45871');
-          } catch (e) {
-            return;
-          }
-          socket.onopen = function () {
-            retry = 0;
-            try {
-              socket.send(JSON.stringify({ type: 'hello', shell: 'dsh-plugin' }));
-            } catch (e) {
-              /* ignore */
-            }
-          };
-          socket.onmessage = function (ev) {
-            try {
-              var msg = JSON.parse(ev.data);
-              if (msg && msg.type === 'say') {
-                showBubble(msg.text);
-                stateRef.current.pose = 'happy';
-                stateRef.current.happyUntil = performance.now() + 3000;
-              }
-            } catch (e) {
-              /* ignore */
-            }
-          };
-          socket.onclose = function () {
-            socket = null;
-            retryTimer = window.setTimeout(connect, Math.min(15000, 2000 * (++retry)));
-          };
-          socket.onerror = function () {
-            try {
-              socket.close();
-            } catch (e) {
-              /* ignore */
-            }
-          };
+        // 内核对齐：模块级单例连接，这里只挂监听
+        function onCoreSay(msg) {
+          showBubble(msg.text);
+          stateRef.current.pose = 'happy';
+          stateRef.current.happyUntil = performance.now() + 3000;
         }
-        connect();
+        coreListeners.push(onCoreSay);
+        coreConnect();
 
         return function () {
           cancelAnimationFrame(raf);
-          window.clearTimeout(retryTimer);
-          if (socket) {
-            try {
-              socket.close();
-            } catch (e) {
-              /* ignore */
-            }
-          }
+          var index = coreListeners.indexOf(onCoreSay);
+          if (index >= 0) coreListeners.splice(index, 1);
         };
       }, []);
 
