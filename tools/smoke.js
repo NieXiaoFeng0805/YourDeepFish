@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 /**
  * 内核冒烟测试：在沙箱目录里验证「监视 → 整理 → 审计」闭环。
  * 运行：node tools/smoke.js
@@ -37,7 +37,7 @@ async function main() {
   reset();
   fs.mkdirSync(path.join(ROOT, 'data', 'logs'), { recursive: true });
 
-  const core = spawn(process.execPath, [path.join(ROOT, 'core', 'index.js')], {
+  const core = spawn(process.execPath, [path.join(ROOT, 'packages', 'core', 'index.js')], {
     env: { ...process.env, CORE_DOWNLOADS: SANDBOX, CORE_PORT: String(PORT) },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -94,3 +94,4 @@ main().catch((err) => {
   console.error('SMOKE ERROR', err);
   process.exit(1);
 });
+

@@ -65,15 +65,13 @@ npm run core
 ## 目录
 
 ```
-core/               内核：WS 服务、触发调度、工具、审计
-electron/           外壳：主进程、预加载、渲染（Canvas 2D）
-assets/char/        抠好的角色图（maid.png）
-assets/char/legacy/ 旧的双立绘方案，已停用
-assets/icon/        托盘与图标
-tools/build_assets.py    立绘 → 透明 PNG（白底键控）
-tools/character_sheet.py 角色设定卡 + 主色板
-tools/smoke.js      内核冒烟测试
-data/               配置、审计、便签（运行时生成）
+packages/core/       内核：WS 服务、触发调度、工具、审计、人设台词
+packages/desktop/    桌面外壳：主进程、预加载、渲染（Canvas 2D）
+packages/plugin-dsh/ DSH 浏览器外壳：shell.overlay 悬浮层（实验）
+assets/char/         抠好的角色姿态（坐姿 / 眨眼 / 躺姿）
+assets/icon/         托盘与图标
+tools/               构建与验证脚本（素材、设定卡、冒烟测试、插件 harness）
+data/                配置、审计、便签（运行时生成）
 ```
 
 ## 素材处理
@@ -91,10 +89,32 @@ python tools/character_sheet.py
 
 | 命令 | 用途 |
 | --- | --- |
-| `npm start` | 启动桌宠 |
+| `npm start` | 启动桌面桌宠 |
 | `npm run core` | 只启动内核 |
 | `npm run qa` | 离屏渲染截图到 `build/preview.png`，**不会在屏幕上弹窗** |
 | `node tools/smoke.js` | 内核闭环测试：监视 → 归档 → 审计 |
+| `python tools/build_plugin_client.py` | 重新生成插件客户端（内联角色图） |
+| `electron tools/harness/main.js` | 在本地 harness 里验证插件渲染 |
+
+## DSH 插件（实验）
+
+`packages/plugin-dsh` 是一个 DSH 浏览器插件：注册到 `shell.overlay`，在界面右下角画一只会呼吸、可点击的小肥鱼。角色图以 base64 内联进 `lib/client.js`，不依赖宿主静态路由。
+
+```powershell
+# 生成客户端（改了姿态图之后）
+python tools/build_plugin_client.py
+
+# 本地验证（不需要重启 DSH）
+electron tools/harness/main.js
+```
+
+安装到 DSH profile 需要重启宿主，步骤如下（会中断当前会话）：
+
+```powershell
+cd $env:USERPROFILE\.dsh\profiles\desktop
+pnpm add file:D:\桌宠小肥鱼\packages\plugin-dsh
+# 然后把 dsh-yourdeepfish 加进 package.json 的 dsh.profile.bundles，重启 DSH
+```
 
 ## 已知问题
 

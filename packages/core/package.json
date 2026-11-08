@@ -1,0 +1,13 @@
+{
+  "name": "@yourdeepfish/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "小肥鱼内核：WS 服务、触发调度、工具、审计、人设台词",
+  "main": "index.js",
+  "files": [
+    "*.js"
+  ],
+  "dependencies": {
+    "ws": "^8.22.1"
+  }
+}

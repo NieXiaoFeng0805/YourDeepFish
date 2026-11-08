@@ -1,0 +1,35 @@
+{
+  "name": "dsh-yourdeepfish",
+  "version": "0.1.0",
+  "description": "小肥鱼：在 DSH 界面右下角养一只鲸鱼女仆（浏览器外壳）",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-layout"
+      ]
+    }
+  },
+  "keywords": [
+    "deepseek",
+    "deepseek-harness",
+    "dsh-plugin",
+    "desktop-pet"
+  ],
+  "license": "MIT"
+}

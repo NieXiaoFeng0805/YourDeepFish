@@ -7,7 +7,7 @@ const { spawn } = require('node:child_process');
 const WebSocket = require('ws');
 const persona = require('../core/persona');
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 const DATA = path.join(ROOT, 'data');
 const W = 260;
 const H = 340;
@@ -424,7 +424,7 @@ function ensureCore() {
 async function startCore() {
   const running = await ensureCore();
   if (running) return;
-  coreChild = spawn(process.execPath, [path.join(ROOT, 'core', 'index.js')], {
+  coreChild = spawn(process.execPath, [path.join(ROOT, 'packages', 'core', 'index.js')], {
     env: { ...process.env, ELECTRON_RUN_AS_NODE: '1', CORE_PARENT: '1' },
     stdio: ['ignore', 'pipe', 'pipe'],
     windowsHide: true,

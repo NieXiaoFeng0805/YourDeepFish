@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>plugin harness</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: linear-gradient(150deg, #131c33 0%, #20395c 45%, #4a5f8c 100%); }
+    #root { position: relative; width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="../../node_modules/react/umd/react.development.js"></script>
+  <script src="../../node_modules/react-dom/umd/react-dom.development.js"></script>
+  <script>
+    window.__ModuleLoader__ = {
+      load: function (mod) {
+        var captured = null;
+        var mod_ = mod.factory(function (name) {
+          if (name === 'react') return window.React;
+          throw new Error('unexpected require: ' + name);
+        });
+        var ctx = {
+          slots: {
+            inject: function (name, cb) { captured = cb(); },
+            register: function (opts, Comp) { return Comp; }
+          }
+        };
+        mod_.apply(ctx);
+        window.__petComponent = captured;
+        if (captured) {
+          ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(captured, {}));
+        } else {
+          document.getElementById('root').textContent = 'NO COMPONENT REGISTERED';
+        }
+      }
+    };
+  </script>
+  <script src="../../packages/plugin-dsh/lib/client.js"></script>
+</body>
+</html>

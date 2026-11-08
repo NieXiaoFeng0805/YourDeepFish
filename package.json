@@ -1,21 +1,26 @@
 {
-  "name": "xiaofeiyu-pet",
+  "name": "yourdeepfish",
   "version": "0.1.0",
   "private": true,
-  "description": "桌宠小肥鱼 - 桌面宠物（内核 + 外壳双形态）",
-  "main": "electron/main.js",
+  "description": "小肥鱼 · 桌宠（内核 + 桌面外壳 + 插件外壳）",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "start": "electron .",
-    "core": "node core/index.js",
-    "qa": "electron . --qa",
-    "shot": "electron . --shot",
+    "start": "electron packages/desktop",
+    "core": "node packages/core/index.js",
+    "qa": "electron packages/desktop --qa",
+    "shot": "electron packages/desktop --shot",
     "assets": "python tools/build_assets.py",
+    "poses": "python tools/build_poses.py",
     "smoke": "node tools/smoke.js"
   },
   "dependencies": {
     "ws": "^8.22.1"
   },
   "devDependencies": {
-    "electron": "^45.2.3"
+    "electron": "^45.2.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }

@@ -3,7 +3,7 @@ const path = require('node:path');
 const os = require('node:os');
 const fs = require('node:fs');
 
-const ROOT = path.join(__dirname, '..');
+const ROOT = path.join(__dirname, '..', '..');
 const DATA_DIR = path.join(ROOT, 'data');
 const LOG_DIR = path.join(DATA_DIR, 'logs');
 for (const dir of [DATA_DIR, LOG_DIR]) fs.mkdirSync(dir, { recursive: true });

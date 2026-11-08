@@ -139,7 +139,7 @@ hub.on('hello', (msg, ws) => {
   log('外壳已接入:', msg.shell || 'unknown');
   hub.safeSend(ws, {
     type: 'status',
-    version: require('../package.json').version,
+    version: require('../../package.json').version,
     allowLevel: config.allowLevel,
     downloadsDir: config.downloadsDir,
     tools: tools.list(),

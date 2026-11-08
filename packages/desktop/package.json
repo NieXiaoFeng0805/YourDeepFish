@@ -1,0 +1,10 @@
+{
+  "name": "@yourdeepfish/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "小肥鱼桌面外壳：透明悬浮窗、物理、托盘",
+  "main": "main.js",
+  "dependencies": {
+    "ws": "^8.22.1"
+  }
+}

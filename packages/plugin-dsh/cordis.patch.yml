@@ -1,0 +1,5 @@
+# dsh-yourdeepfish 的组合包补丁。
+# 行 id 是 `yourdeepfish`，客户端模块自己注册的 id 必须是包名 `dsh-yourdeepfish`。
+- insert:
+    - id: yourdeepfish
+      name: dsh-yourdeepfish
