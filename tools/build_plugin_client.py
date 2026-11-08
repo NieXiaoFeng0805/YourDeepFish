@@ -48,6 +48,9 @@ window.__ModuleLoader__.load({
     var h = React.createElement;
 
     var NS = 'yourdeepfish';
+    // 客户端插件必须声明依赖的服务，否则访问 ctx.slots 会抛
+    // "cannot get property \"slots\" without inject"
+    var inject = ['slots'];
     var POSES = {
       idle: '__IDLE__',
       happy: '__HAPPY__',
@@ -197,6 +200,7 @@ window.__ModuleLoader__.load({
       }
     }
 
+    exports.inject = inject;
     exports.apply = apply;
     exports.NS = NS;
     return module.exports;
