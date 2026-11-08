@@ -1,0 +1,10 @@
+﻿node_modules/
+build/
+data/
+*.log
+
+# 原始素材不入库（体积大、含生成水印）
+dataset/raw/
+assets/raw/
+assets/char/legacy/
+assets/char/pose_ref_*.png

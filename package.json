@@ -1,0 +1,21 @@
+{
+  "name": "xiaofeiyu-pet",
+  "version": "0.1.0",
+  "private": true,
+  "description": "桌宠小肥鱼 - 桌面宠物（内核 + 外壳双形态）",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "electron .",
+    "core": "node core/index.js",
+    "qa": "electron . --qa",
+    "shot": "electron . --shot",
+    "assets": "python tools/build_assets.py",
+    "smoke": "node tools/smoke.js"
+  },
+  "dependencies": {
+    "ws": "^8.22.1"
+  },
+  "devDependencies": {
+    "electron": "^45.2.3"
+  }
+}

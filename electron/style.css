@@ -1,0 +1,76 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+#stage {
+  display: block;
+  width: 260px;
+  height: 340px;
+}
+
+.bubble {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  max-width: 226px;
+  padding: 8px 13px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.97);
+  color: #2b3a67;
+  font: 500 12.5px/1.5 "Microsoft YaHei", "PingFang SC", sans-serif;
+  letter-spacing: 0.2px;
+  box-shadow: 0 6px 18px rgba(38, 64, 140, 0.22), 0 0 0 1px rgba(120, 160, 255, 0.25) inset;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease, background 0.2s ease;
+  word-break: break-word;
+}
+
+.bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  background: rgba(255, 255, 255, 0.97);
+  transform: rotate(45deg);
+  border-radius: 3px;
+}
+
+.bubble.tsun {
+  background: rgba(255, 246, 250, 0.98);
+  box-shadow: 0 6px 18px rgba(200, 80, 120, 0.2), 0 0 0 1px rgba(255, 150, 180, 0.35) inset;
+}
+
+.bubble.fluster {
+  background: rgba(255, 250, 246, 0.98);
+  box-shadow: 0 6px 18px rgba(220, 130, 80, 0.2), 0 0 0 1px rgba(255, 190, 150, 0.4) inset;
+}
+
+.bubble.shy {
+  background: rgba(255, 248, 250, 0.98);
+  box-shadow: 0 6px 18px rgba(210, 100, 140, 0.18), 0 0 0 1px rgba(255, 170, 195, 0.35) inset;
+}
+
+.bubble.sad {
+  background: rgba(246, 249, 255, 0.98);
+  box-shadow: 0 6px 18px rgba(80, 100, 150, 0.2), 0 0 0 1px rgba(150, 175, 220, 0.35) inset;
+}
+
+.bubble.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
